@@ -25,11 +25,11 @@ export default function Navbar() {
             <button className="text-neutral-800 hover:text-accent p-2" aria-label="Search">
               <Search className="h-5 w-5" />
             </button>
-            <Link href="/admin" className="text-neutral-800 hover:text-accent p-2" aria-label="Account">
-              <User className="h-5 w-5" />
+            <Link href="/login" className="text-sm font-semibold text-neutral-800 hover:text-accent transition-colors">
+              Sign In
             </Link>
-            <Link href="/contact" className="btn-accent text-sm py-2 px-4">
-              Schedule Visit
+            <Link href="/register" className="btn-accent text-sm py-2 px-4">
+              Sign Up
             </Link>
           </div>
 

@@ -1,6 +1,5 @@
 import './globals.css';
-import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
+import LayoutWrapper from '@/components/layout/LayoutWrapper';
 
 export const metadata = {
   title: 'Inovixa House | Premium Real Estate Platform',
@@ -24,11 +23,9 @@ export default function RootLayout({ children }) {
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet" />
       </head>
       <body className="flex flex-col min-h-screen">
-        <Navbar />
-        <main className="flex-grow">
+        <LayoutWrapper>
           {children}
-        </main>
-        <Footer />
+        </LayoutWrapper>
       </body>
     </html>
   );

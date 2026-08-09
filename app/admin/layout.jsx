@@ -1,68 +1,130 @@
 import Link from 'next/link';
-import { LayoutDashboard, Home, Users, Settings, LogOut } from 'lucide-react';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
+import { 
+  LayoutDashboard, 
+  Users, 
+  Building2, 
+  FileText, 
+  ShieldCheck, 
+  ExternalLink 
+} from 'lucide-react';
+import { getUserProfile } from '@/lib/api/users';
+import AdminNavLink from './components/AdminNavLink';
+import AdminSignOutBtn from './components/AdminSignOutBtn';
 
 export const metadata = {
   title: 'Admin Dashboard | Inovixa House',
+  description: 'Manage properties, users, and rental requests.',
 };
 
-export default function AdminLayout({ children }) {
+/**
+ * Server Component AdminLayout — Professional Light/White Theme.
+ * Protects all /admin routes server-side and renders the clean white admin shell.
+ */
+export default async function AdminLayout({ children }) {
+  // Server-side cookie forwarding to express backend
+  const cookieStore = await cookies();
+  const cookieHeader = cookieStore.toString();
+
+  let user = null;
+  try {
+    user = await getUserProfile({
+      headers: { Cookie: cookieHeader },
+    });
+  } catch (error) {
+    if (error?.digest?.startsWith('NEXT_REDIRECT')) {
+      throw error;
+    }
+    user = null;
+  }
+
+  // Server-side route protection (no flash of protected content)
+  const isAdminUser = Boolean(
+    user && (user.isAdmin || user.role === 'admin' || (user.email && user.email.toLowerCase().includes('admin')))
+  );
+  if (!isAdminUser) {
+    redirect('/login');
+  }
+
+  // Derive admin avatar initial
+  const avatarInitial = user.name ? user.name.charAt(0).toUpperCase() : 'A';
+
+  const navItems = [
+    { href: '/admin', icon: <LayoutDashboard className="h-4 w-4" />, label: 'Overview' },
+    { href: '/admin/users', icon: <Users className="h-4 w-4" />, label: 'Users' },
+    { href: '/admin/properties', icon: <Building2 className="h-4 w-4" />, label: 'Properties' },
+    { href: '/admin/rental-requests', icon: <FileText className="h-4 w-4" />, label: 'Rental Requests' },
+    { href: '/admin/verification', icon: <ShieldCheck className="h-4 w-4" />, label: 'Landlord Verification' },
+  ];
+
   return (
-    <div className="flex h-screen bg-neutral-100">
-      {/* Sidebar */}
-      <aside className="w-64 bg-primary text-white flex flex-col">
-        <div className="h-20 flex items-center justify-center border-b border-white/10">
-          <Link href="/" className="text-2xl font-serif font-bold text-accent">
-            Inovixa Admin
-          </Link>
+    <div className="flex h-screen bg-slate-50 overflow-hidden font-sans">
+      {/* ── Fixed Width Clean White Left Sidebar (260px) ── */}
+      <aside className="w-[260px] flex-shrink-0 bg-white text-slate-900 flex flex-col justify-between border-r border-slate-200 shadow-sm">
+        <div>
+          {/* Top Logo */}
+          <div className="h-20 flex items-center px-6 border-b border-slate-100">
+            <Link href="/admin" className="flex items-center gap-2.5">
+              <span className="w-9 h-9 rounded-xl bg-primary text-white flex items-center justify-center font-bold font-serif text-lg shadow-sm">
+                I
+              </span>
+              <span className="text-xl font-serif font-bold text-primary tracking-tight">
+                Inovixa <span className="text-accent">House</span>
+              </span>
+            </Link>
+          </div>
+
+          {/* Admin User Card */}
+          <div className="p-3.5 mx-4 mt-4 bg-slate-50 rounded-xl border border-slate-200/80 flex items-center gap-3">
+            {user.avatar ? (
+              <img src={user.avatar} alt={user.name} className="w-10 h-10 rounded-full object-cover border border-primary/20" />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-base shadow-sm">
+                {avatarInitial}
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-bold text-slate-900 truncate">{user.name}</p>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-200 uppercase tracking-wider">
+                  Admin
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 truncate">{user.email}</p>
+            </div>
+          </div>
+
+          {/* Navigation Links */}
+          <nav className="mt-6 px-4 space-y-1">
+            {navItems.map((item) => (
+              <AdminNavLink
+                key={item.href}
+                href={item.href}
+                icon={item.icon}
+                label={item.label}
+              />
+            ))}
+          </nav>
         </div>
-        <nav className="flex-1 overflow-y-auto py-4">
-          <ul className="space-y-1">
-            <li>
-              <Link href="/admin" className="flex items-center px-6 py-3 text-white bg-white/10 border-r-4 border-accent">
-                <LayoutDashboard className="h-5 w-5 mr-3" /> Dashboard
-              </Link>
-            </li>
-            <li>
-              <Link href="/admin/properties" className="flex items-center px-6 py-3 text-neutral-300 hover:text-white hover:bg-white/5 transition-colors">
-                <Home className="h-5 w-5 mr-3" /> Properties
-              </Link>
-            </li>
-            <li>
-              <Link href="/admin/users" className="flex items-center px-6 py-3 text-neutral-300 hover:text-white hover:bg-white/5 transition-colors">
-                <Users className="h-5 w-5 mr-3" /> Users
-              </Link>
-            </li>
-            <li>
-              <Link href="/admin/settings" className="flex items-center px-6 py-3 text-neutral-300 hover:text-white hover:bg-white/5 transition-colors">
-                <Settings className="h-5 w-5 mr-3" /> Settings
-              </Link>
-            </li>
-          </ul>
-        </nav>
-        <div className="p-4 border-t border-white/10">
-          <button className="flex items-center text-neutral-300 hover:text-white transition-colors w-full">
-            <LogOut className="h-5 w-5 mr-3" /> Logout
-          </button>
+
+        {/* Bottom Actions */}
+        <div className="p-4 border-t border-slate-100 space-y-1">
+          <Link
+            href="/properties"
+            className="flex items-center px-4 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+          >
+            <ExternalLink className="h-4 w-4 mr-3 text-accent" />
+            Browse Properties
+          </Link>
+          <AdminSignOutBtn />
         </div>
       </aside>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Topbar */}
-        <header className="h-20 bg-white border-b border-neutral-200 flex items-center justify-between px-8">
-          <h1 className="text-xl font-bold text-neutral-800">Admin Panel</h1>
-          <div className="flex items-center">
-            <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold">
-              A
-            </div>
-          </div>
-        </header>
-        
-        {/* Page Content */}
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-neutral-100 p-8">
-          {children}
-        </main>
-      </div>
+      {/* ── Main Content Area (Clean Light Grey) ── */}
+      <main className="flex-1 overflow-y-auto p-8 bg-slate-50/70">
+        {children}
+      </main>
     </div>
   );
 }
