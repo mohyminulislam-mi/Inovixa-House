@@ -1,10 +1,10 @@
 import Link from 'next/link';
 import { cookies } from 'next/headers';
-import { Plus } from 'lucide-react';
 import { getProperties } from '@/lib/api/properties';
 import SearchFilter from '@/components/admin/SearchFilter';
 import PropertiesTable from '@/components/admin/PropertiesTable';
 import Pagination from '@/components/admin/Pagination';
+import AddPropertyButton from '@/components/admin/AddPropertyButton';
 
 export const metadata = {
   title: 'Property Management | Inovixa House Admin',
@@ -54,12 +54,7 @@ export default async function AdminPropertiesPage({ searchParams }) {
         </div>
         <div className="flex items-center space-x-4">
           <SearchFilter placeholder="Search properties..." />
-          <Link
-            href="/admin/properties/new"
-            className="btn-accent text-sm py-2 px-4 whitespace-nowrap flex items-center gap-1.5"
-          >
-            <Plus className="h-4 w-4" /> Add Property
-          </Link>
+          <AddPropertyButton />
         </div>
       </div>
 
